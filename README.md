@@ -216,6 +216,16 @@ All configuration options are in `~/.config/caelestia/cli.json`.
         "iconTheme": "Papirus-Dark",
         "iconThemeLight": "Papirus-Light",
         "iconThemeDark": "Papirus-Dark",
+        "font": {
+            "family": "Sans Serif",
+            "size": 12,
+            "weight": -1
+        },
+        "fontFixed": {
+            "family": "Monospace",
+            "size": 12,
+            "weight": -1
+        },
         "postHook": "echo $SCHEME_NAME $SCHEME_FLAVOUR $SCHEME_MODE $SCHEME_VARIANT $SCHEME_COLOURS"
     },
     "toggles": {

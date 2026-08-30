@@ -322,15 +322,23 @@ def apply_gtk(colours: dict[str, str], mode: str, icon_theme: str | None = None)
 
 
 @log_exception
-def apply_qt(colours: dict[str, str], mode: str, icon_theme: str | None = None) -> None:
+def apply_qt(
+    colours: dict[str, str],
+    mode: str,
+    icon_theme: str | None = None,
+    font: dict | None = None,
+    font_fixed: dict | None = None,
+) -> None:
     colours = gen_replace(colours, templates_dir / f"qt{mode}.colors", hash=True)
     atomic_write(config_dir / "qtengine/caelestia.colors", colours)
 
-    config = (templates_dir / "qtengine.json").read_text()
-    config = config.replace("{{ $mode }}", mode.capitalize())
-    if icon_theme is not None:
-        config = config.replace(f'"iconTheme": "Papirus-{mode.capitalize()}"', f'"iconTheme": "{icon_theme}"')
-    atomic_write(config_dir / "qtengine/config.json", config)
+    config = json.loads((templates_dir / "qtengine.json").read_text())
+    theme = config["theme"]
+    theme["iconTheme"] = icon_theme if icon_theme is not None else f"Papirus-{mode.capitalize()}"
+    for key, override in (("font", font), ("fontFixed", font_fixed)):
+        if override:
+            theme[key] = {**theme.get(key, {}), **override}
+    atomic_write(config_dir / "qtengine/config.json", json.dumps(config, indent=4))
 
 
 @log_exception
@@ -441,10 +449,12 @@ def apply_colours(colours: dict[str, str], mode: str) -> None:
             if check("enableHtop"):
                 apply_htop(colours)
             icon_theme = cfg.get(f"iconTheme{mode.capitalize()}") or cfg.get("iconTheme")
+            font = cfg.get("font")
+            font_fixed = cfg.get("fontFixed")
             if check("enableGtk"):
                 apply_gtk(colours, mode, icon_theme)
             if check("enableQt"):
-                apply_qt(colours, mode, icon_theme)
+                apply_qt(colours, mode, icon_theme, font, font_fixed)
             if check("enableWarp"):
                 apply_warp(colours, mode)
             if check("enableChromium"):
